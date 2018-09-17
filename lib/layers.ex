@@ -43,19 +43,19 @@ defmodule Layers do
   """
   @type t :: layers | indices
 
-  @callback layer_to_index(layer | index) :: {:ok, index} | {:error, String.t}
+  @callback layer_to_index(layer | index) :: {:ok, index} | {:error, String.t()}
   @callback layer_to_index!(layer | index) :: index
-  @callback enable(Mask.t, layer | index) :: {:ok, Mask.t} | {:error, String.t}
-  @callback enable!(Mask.t, layer | index) :: Mask.t
-  @callback disable(Mask.t, layer | index) :: {:ok, Mask.t} | {:error, String.t}
-  @callback disable!(Mask.t, layer | index) :: Mask.t
-  @callback enabled?(Mask.t, layer | index) :: boolean
-  @callback disabled?(Mask.t, layer | index) :: boolean
-  @callback enabled_layers(Mask.t) :: t
-  @callback disabled_layers(Mask.t) :: t
-  @callback map(Mask.t, (layer -> term)) :: [term]
-  @callback map(Mask.t, layer | index, (layer -> term)) :: {:some, term} | :none
-  @callback map(Mask.t, layer | index, term, (layer -> term)) :: term
+  @callback enable(Mask.t(), layer | index) :: {:ok, Mask.t()} | {:error, String.t()}
+  @callback enable!(Mask.t(), layer | index) :: Mask.t()
+  @callback disable(Mask.t(), layer | index) :: {:ok, Mask.t()} | {:error, String.t()}
+  @callback disable!(Mask.t(), layer | index) :: Mask.t()
+  @callback enabled?(Mask.t(), layer | index) :: boolean
+  @callback disabled?(Mask.t(), layer | index) :: boolean
+  @callback enabled_layers(Mask.t()) :: t
+  @callback disabled_layers(Mask.t()) :: t
+  @callback map(Mask.t(), (layer -> term)) :: [term]
+  @callback map(Mask.t(), layer | index, (layer -> term)) :: {:some, term} | :none
+  @callback map(Mask.t(), layer | index, term, (layer -> term)) :: term
 
   @doc false
   defmacro __using__(opts) do
@@ -63,7 +63,7 @@ defmodule Layers do
       @behaviour Layers
       import Layers, only: :macros
 
-      Module.register_attribute __MODULE__, :layer_register, accumulate: true
+      Module.register_attribute(__MODULE__, :layer_register, accumulate: true)
       @before_compile Layers
     end
   end
@@ -124,32 +124,33 @@ defmodule Layers do
     layers = Module.get_attribute(env.module, :layer_register)
 
     quote do
-      @impl(Layers)
+      @impl Layers
       def layer_to_index(layer), do: Layers.layer_to_index(unquote(Macro.escape(layers)), layer)
-      @impl(Layers)
+      @impl Layers
       def layer_to_index!(layer), do: Layers.layer_to_index!(unquote(Macro.escape(layers)), layer)
-      @impl(Layers)
+      @impl Layers
       def enable(mask, layer), do: Layers.enable(unquote(Macro.escape(layers)), mask, layer)
-      @impl(Layers)
+      @impl Layers
       def enable!(mask, layer), do: Layers.enable!(unquote(Macro.escape(layers)), mask, layer)
-      @impl(Layers)
+      @impl Layers
       def disable(mask, layer), do: Layers.disable(unquote(Macro.escape(layers)), mask, layer)
-      @impl(Layers)
+      @impl Layers
       def disable!(mask, layer), do: Layers.disable!(unquote(Macro.escape(layers)), mask, layer)
-      @impl(Layers)
+      @impl Layers
       def enabled?(mask, layer), do: Layers.enabled?(unquote(Macro.escape(layers)), mask, layer)
-      @impl(Layers)
+      @impl Layers
       def disabled?(mask, layer), do: Layers.disabled?(unquote(Macro.escape(layers)), mask, layer)
-      @impl(Layers)
+      @impl Layers
       def enabled_layers(mask), do: Layers.enabled_layers(unquote(Macro.escape(layers)), mask)
-      @impl(Layers)
+      @impl Layers
       def disabled_layers(mask), do: Layers.disabled_layers(unquote(Macro.escape(layers)), mask)
-      @impl(Layers)
+      @impl Layers
       def map(mask, fun), do: Layers.map(unquote(Macro.escape(layers)), mask, fun)
-      @impl(Layers)
+      @impl Layers
       def map(mask, layer, fun), do: Layers.map(unquote(Macro.escape(layers)), mask, layer, fun)
-      @impl(Layers)
-      def map(mask, layer, default, fun), do: Layers.map(unquote(Macro.escape(layers)), mask, layer, default, fun)
+      @impl Layers
+      def map(mask, layer, default, fun),
+        do: Layers.map(unquote(Macro.escape(layers)), mask, layer, default, fun)
     end
   end
 
@@ -168,7 +169,7 @@ defmodule Layers do
       {:error, "Layer {dev} not found!"}
 
   """
-  @spec layer_to_index(t, layer | index) :: {:ok, index} | {:error, String.t}
+  @spec layer_to_index(t, layer | index) :: {:ok, index} | {:error, String.t()}
   def layer_to_index(_, layer) when is_number(layer), do: {:ok, layer}
 
   def layer_to_index(layers, layer) do
@@ -193,7 +194,7 @@ defmodule Layers do
 
   def layer_to_index!(layers, layer) do
     case Enum.find_index(layers, &(layer == &1)) do
-      nil -> throw "Layer {" <> to_string(layer) <> "} not found!"
+      nil -> throw("Layer {" <> to_string(layer) <> "} not found!")
       index -> index
     end
   end
@@ -212,7 +213,7 @@ defmodule Layers do
       true
 
   """
-  @spec enable(t, Mask.t, layer | index) :: {:ok, Mask.t} | {:error, String.t}
+  @spec enable(t, Mask.t(), layer | index) :: {:ok, Mask.t()} | {:error, String.t()}
   def enable(layers, mask, layer) do
     case layer_to_index(layers, layer) do
       {:ok, index} -> {:ok, Mask.enable(mask, index)}
@@ -235,11 +236,11 @@ defmodule Layers do
       true
 
   """
-  @spec enable!(t, Mask.t, layer | index) :: Mask.t | no_return
+  @spec enable!(t, Mask.t(), layer | index) :: Mask.t() | no_return
   def enable!(layers, mask, layer) do
     case enable(layers, mask, layer) do
       {:ok, mask} -> mask
-      {:error, error} -> throw error
+      {:error, error} -> throw(error)
     end
   end
 
@@ -258,7 +259,7 @@ defmodule Layers do
       false
 
   """
-  @spec disable(t, Mask.t, layer | index) :: {:ok, Mask.t} | {:error, String.t}
+  @spec disable(t, Mask.t(), layer | index) :: {:ok, Mask.t()} | {:error, String.t()}
   def disable(layers, mask, layer) do
     case layer_to_index(layers, layer) do
       {:ok, index} -> {:ok, Mask.disable(mask, index)}
@@ -282,11 +283,11 @@ defmodule Layers do
       false
 
   """
-  @spec disable!(t, Mask.t, layer | index) :: Mask.t | no_return
+  @spec disable!(t, Mask.t(), layer | index) :: Mask.t() | no_return
   def disable!(layers, mask, layer) do
     case disable(layers, mask, layer) do
       {:ok, mask} -> mask
-      {:error, error} -> throw error
+      {:error, error} -> throw(error)
     end
   end
 
@@ -312,7 +313,7 @@ defmodule Layers do
       true
 
   """
-  @spec enabled?(t, Mask.t, layer | index | [layer] | [index]) :: boolean
+  @spec enabled?(t, Mask.t(), layer | index | [layer] | [index]) :: boolean
   def enabled?(layers, mask, layer) when is_list(layer) do
     Enum.reduce(layer, false, fn
       _, true -> true
@@ -349,7 +350,7 @@ defmodule Layers do
       true
 
   """
-  @spec disabled?(t, Mask.t, layer | index | [layer] | [index]) :: boolean
+  @spec disabled?(t, Mask.t(), layer | index | [layer] | [index]) :: boolean
   def disabled?(layers, mask, layer) do
     !enabled?(layers, mask, layer)
   end
@@ -367,7 +368,7 @@ defmodule Layers do
       [:g, :a]
 
   """
-  @spec enabled_layers(t, Mask.t) :: t
+  @spec enabled_layers(t, Mask.t()) :: t
   def enabled_layers(layers, mask) do
     layers
     |> Enum.filter(&enabled?(layers, mask, &1))
@@ -386,7 +387,7 @@ defmodule Layers do
       [:r, :b]
 
   """
-  @spec disabled_layers(t, Mask.t) :: t
+  @spec disabled_layers(t, Mask.t()) :: t
   def disabled_layers(layers, mask) do
     layers
     |> Enum.filter(&disabled?(layers, mask, &1))
@@ -405,7 +406,7 @@ defmodule Layers do
       ["g", "a"]
 
   """
-  @spec map(t, Mask.t, (layer -> term)) :: [term]
+  @spec map(t, Mask.t(), (layer -> term)) :: [term]
   def map(layers, mask, fun) do
     enabled_layers(layers, mask)
     |> Enum.map(fun)
@@ -427,7 +428,7 @@ defmodule Layers do
       :none
 
   """
-  @spec map(t, Mask.t, layer | index, (layer -> term)) :: {:some, term} | :none
+  @spec map(t, Mask.t(), layer | index, (layer -> term)) :: {:some, term} | :none
   def map(layers, mask, layer, fun) do
     if enabled?(layers, mask, layer), do: {:some, fun.(layer)}, else: :none
   end
@@ -447,9 +448,8 @@ defmodule Layers do
       "disabled"
 
   """
-  @spec map(t, Mask.t, layer | index, term, (layer -> term)) :: term
+  @spec map(t, Mask.t(), layer | index, term, (layer -> term)) :: term
   def map(layers, mask, layer, default, fun) do
     if enabled?(layers, mask, layer), do: fun.(layer), else: default
   end
-
 end

@@ -85,7 +85,7 @@ defmodule Layers.Mask do
   end
 
   def enable(mask, indices) do
-    mask ||| (1 <<< indices)
+    mask ||| 1 <<< indices
   end
 
   @doc """
@@ -114,11 +114,12 @@ defmodule Layers.Mask do
   end
 
   def disable(mask, indices) do
-    size = mask
-           |> Integer.digits(2)
-           |> length()
+    size =
+      mask
+      |> Integer.digits(2)
+      |> length()
 
-    mask &&& (enable_all(mask, size) ^^^ (1 <<< indices))
+    mask &&& enable_all(mask, size) ^^^ (1 <<< indices)
   end
 
   @doc """
@@ -188,11 +189,10 @@ defmodule Layers.Mask do
       <<1, 0, 1, 0, 0>>
 
   """
-  @spec format(t) :: String.t
+  @spec format(t) :: String.t()
   def format(mask) do
     mask
     |> Integer.digits(2)
     |> Kernel.to_string()
   end
-
 end
