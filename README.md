@@ -1,6 +1,6 @@
 # Layers
 
-**TODO: Add description**
+Elixir library for registering and managing layers enabled state.
 
 ## Installation
 
