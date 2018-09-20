@@ -39,6 +39,13 @@ defmodule Layers do
   @type indices :: [index]
 
   @typedoc """
+  Special command to obtain a layer combination.
+  """
+  @type layer_query ::
+          {:!, layer}
+          | {:!, [layer]}
+
+  @typedoc """
   A list of atom based layer identifiers, or a list of the layers numeric identifiers
   """
   @type t :: layers | indices
@@ -311,9 +318,17 @@ defmodule Layers do
       false
       ...> Layers.enabled?(layers, mask, [:r, :a])
       true
+      ...> Layers.enabled?(layers, mask, {:!, :a})
+      true
+      ...> Layers.enabled?(layers, mask, {:!, [:g, :a]})
+      false
 
   """
-  @spec enabled?(t, Mask.t(), layer | index | [layer] | [index]) :: boolean
+  @spec enabled?(t, Mask.t(), layer | index | [layer] | [index] | layer_query) :: boolean
+  def enabled?(layers, mask, {:!, _} = layer_query) do
+    enabled?(layers, mask, query(layers, layer_query))
+  end
+
   def enabled?(layers, mask, layer) when is_list(layer) do
     Enum.reduce(layer, false, fn
       _, true -> true
@@ -452,4 +467,11 @@ defmodule Layers do
   def map(layers, mask, layer, default, fun) do
     if enabled?(layers, mask, layer), do: fun.(layer), else: default
   end
+
+  @spec query(t, layer_query) :: [layer]
+  defp query(layers, {:!, layers_to_invert}) when is_list(layers_to_invert) do
+    Enum.filter(layers, fn layer -> !Enum.member?(layers_to_invert, layer) end)
+  end
+
+  defp query(layers, {:!, layer_to_invert}), do: query(layers, {:!, [layer_to_invert]})
 end
