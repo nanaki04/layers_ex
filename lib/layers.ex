@@ -326,7 +326,7 @@ defmodule Layers do
 
   """
   @spec enabled?(t, Mask.t(), layer | index | [layer] | [index] | layer_query) :: boolean
-  def enabled?(layers, mask, :*), do: true
+  def enabled?(_, _, :*), do: true
 
   def enabled?(layers, mask, {:!, _} = layer_query) do
     enabled?(layers, mask, query(layers, layer_query))
