@@ -44,6 +44,7 @@ defmodule Layers do
   @type layer_query ::
           {:!, layer}
           | {:!, [layer]}
+          | :*
 
   @typedoc """
   A list of atom based layer identifiers, or a list of the layers numeric identifiers
@@ -325,6 +326,8 @@ defmodule Layers do
 
   """
   @spec enabled?(t, Mask.t(), layer | index | [layer] | [index] | layer_query) :: boolean
+  def enabled?(layers, mask, :*), do: true
+
   def enabled?(layers, mask, {:!, _} = layer_query) do
     enabled?(layers, mask, query(layers, layer_query))
   end
@@ -474,4 +477,6 @@ defmodule Layers do
   end
 
   defp query(layers, {:!, layer_to_invert}), do: query(layers, {:!, [layer_to_invert]})
+
+  defp query(layers, :*), do: layers
 end
